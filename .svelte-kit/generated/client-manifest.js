@@ -4,7 +4,7 @@ export const components = [
 	() => import("..\\..\\src\\routes\\__layout.svelte"),
 	() => import("..\\runtime\\components\\error.svelte"),
 	() => import("..\\..\\src\\routes\\calendrier.svelte"),
-	() => import("..\\..\\src\\routes\\films\\index.svelte"),
+	() => import("..\\..\\src\\routes\\films.svelte"),
 	() => import("..\\..\\src\\routes\\index.svelte"),
 	() => import("..\\..\\src\\routes\\login.svelte")
 ];

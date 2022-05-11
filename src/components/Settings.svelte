@@ -1,4 +1,5 @@
 <script>
+  import _ from "lodash";
   import Form from "../components/lib/Form.svelte";
   import { settings } from "../stores/settings";
 
@@ -6,6 +7,7 @@
 
   const selectProgramme = (e) => {
     $settings.currentProgId = currentProgId = Number(e.target.value);
+    $settings.currentProgName = _(progs).find((p) => p[0] === currentProgId)[1];
   };
 
   // TODO: lire ces données via l'API (question : à chaque fois, ou lors d'une initialisation de l'application ?)

@@ -1,8 +1,7 @@
-// TODO: update.
-// import { writable } from "svelte/store";
+import { writable } from "svelte/store";
 
-// export const films = writable({
-//   currentFilmsList: [],
-//   currentFilmPk: null,
-//   currentFilmEditingStatus: null,
-// });
+export const films = writable({
+  currentFilmsList: [],
+  currentFilmPk: null,
+  currentFilmEditingStatus: null,
+});

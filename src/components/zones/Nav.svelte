@@ -1,6 +1,6 @@
 <script>
   import { writable } from "svelte/store";
-  import Connect from "./Connect.svelte";
+  import Connect from "../Connect.svelte";
   import LogoCaptiva from "../icons/LogoCaptiva.svelte";
   import IconSettings from "../icons/Settings.svelte";
   import Modal from "svelte-simple-modal";
@@ -16,7 +16,7 @@
 <nav>
   <div class="left">
     <ul>
-      <li style="margin-right: 6px;"><LogoCaptiva /></li>
+      <!-- <li style="margin-right: 6px;"><LogoCaptiva /></li> -->
       {#if $token !== ""}
         <li>
           <a href="films" class:current={$page.url.pathname === "/films"}
