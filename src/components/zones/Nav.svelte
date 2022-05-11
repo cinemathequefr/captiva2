@@ -2,6 +2,7 @@
   import { writable } from "svelte/store";
   import Connect from "./Connect.svelte";
   import LogoCaptiva from "../icons/LogoCaptiva.svelte";
+  import IconSettings from "../icons/Settings.svelte";
   import Modal from "svelte-simple-modal";
   import Settings from "../Settings.svelte";
   const modal = writable(null);
@@ -29,7 +30,11 @@
           >
         </li>
 
-        <li><span on:click={showSettings}>Settings</span></li>
+        <li
+          ><span class="link" on:click={showSettings}
+            ><IconSettings className="icon" /></span
+          ></li
+        >
       {/if}
     </ul>
   </div>
@@ -38,9 +43,15 @@
   </div>
 </nav>
 
-<Modal show={$modal} />
+<Modal show={$modal} closeButton={false} classWindow="modal-window" />
 
 <style>
+  :global(.modal-window) {
+    width: 400px !important;
+    max-width: 100% !important;
+    border-radius: 2px !important;
+  }
+
   nav {
     position: fixed;
     top: 0;
@@ -63,17 +74,14 @@
     z-index: 900;
   }
 
-  ul {
+  ul,
+  li,
+  li > * {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
   }
 
-  li {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-  }
   .current {
     background-color: #36f;
   }
@@ -106,5 +114,13 @@
 
   :global(a:hover, a:active) {
     color: #fff;
+  }
+
+  :global(.icon) {
+    stroke: #eee;
+    transition: 0.15s;
+  }
+  :global(.icon):hover {
+    stroke: #6f93ff;
   }
 </style>
