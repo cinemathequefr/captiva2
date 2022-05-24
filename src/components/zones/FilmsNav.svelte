@@ -5,13 +5,18 @@
   import { settings } from "../../stores/settings";
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
+  import { onMount } from "svelte";
   // import FilmsExportJson from "./FilmsExportJson.svelte";
   // import FilmsExportJsonNovius from "./FilmsExportJsonNovius.svelte";
   // import XButton from "../ui/XButton.svelte";
   // import Refresh from "../icons/Refresh.svelte";
   // if (!$settings.currentProgId) $settings.currentProgId = 119; // TODO: fetch "default" currentProgId
 
+  // TODO : retrouver l'état du widget : idCycle / $films.currentFilmList, et l'affichage correspondant.
+  onMount(async () => {});
+
   let cyclesResponse;
+  let elSelectCycle;
   // let cyclesResponse = get(`prog/${$settings.currentProgId}/cycles`);
 
   let idCycle;
@@ -20,6 +25,11 @@
   $: {
     $settings.currentProgId = $settings.currentProgId;
     cyclesResponse = get(`prog/${$settings.currentProgId}/cycles`);
+    cyclesResponse.then(() => {
+      idCycle = undefined; // En principe, inutile (idCycle sera affecté dans `refresh`), mais semble éviter un bug.
+      refresh();
+      elSelectCycle.options[0].selected = true; // "Sélectionne" l'intitulé du programme (première option du select).
+    });
   }
 
   /**
@@ -29,24 +39,31 @@
    * @param arg {number|Object} idCycle ou event.
    */
   function fetchFilmsList(arg) {
-    if (typeof arg === "number") {
-      idCycle = arg;
+    if (!arg) {
+      idCycle = undefined;
+      pWhenFilmsFetched = true;
+      $films.currentFilmsList = [];
     } else {
-      idCycle = Number(arg.currentTarget.value);
+      if (typeof arg === "number") {
+        idCycle = arg;
+      } else {
+        idCycle = Number(arg.currentTarget.value);
+      }
+      pWhenFilmsFetched = new Promise((resolve, reject) => {
+        get(`prog/${$settings.currentProgId}/cycle/${idCycle}/films`)
+          .then((data) => {
+            $films.currentFilmsList = _(data.data)
+              .orderBy((d) => _.kebabCase(d.titre))
+              .value();
+            resolve();
+          })
+          .catch((e) => {
+            reject(e);
+          });
+      });
     }
-    pWhenFilmsFetched = new Promise((resolve, reject) => {
-      get(`prog/${$settings.currentProgId}/cycle/${idCycle}/films`)
-        .then((data) => {
-          $films.currentFilmsList = _(data.data)
-            .orderBy((d) => _.kebabCase(d.titre))
-            .value();
-          resolve();
-        })
-        .catch((e) => {
-          reject(e);
-        });
-    });
   }
+
   function selectFilm(e) {
     $films.currentFilmPk = Number(e.currentTarget.dataset.pk);
   }
@@ -57,27 +74,25 @@
 
 <div class="container">
   <div class="cycle-selector">
-    {idCycle}
     <Form>
       <fieldset>
-        <label>
-          <select on:change|preventDefault={fetchFilmsList}>
-            <option disabled selected value={null}
-              >{$settings.currentProgName}</option
-            >
-            {#await cyclesResponse then cycles}
-              {#each cycles.data as cycle}
-                <option value={cycle.id_cycle}>
-                  {cycle.id_cycle}
-                  -
-                  {cycle.titre_cycle}
-                </option>
-              {/each}
-            {:catch}
-              Erreur
-            {/await}
-          </select></label
+        <select
+          bind:this={elSelectCycle}
+          on:change|preventDefault={fetchFilmsList}
         >
+          <option disabled value={null}>📕 {$settings.currentProgName}</option>
+          {#await cyclesResponse then cycles}
+            {#each cycles.data as cycle}
+              <option value={cycle.id_cycle}>
+                {cycle.id_cycle}
+                -
+                {cycle.titre_cycle}
+              </option>
+            {/each}
+          {:catch}
+            Erreur
+          {/await}
+        </select>
       </fieldset>
     </Form>
   </div>
@@ -98,19 +113,22 @@
       >
     </div> -->
 
-    <div class="tools-container-right"
-      ><div class="films-count">
-        {#if idCycle}
+    <div class="tools-container-right">
+      {#if idCycle}
+        <div class="films-count">
           {#await pWhenFilmsFetched then}
-            {$films.currentFilmsList.length}
-            {$films.currentFilmsList.length < 2
-              ? "film trouvé."
-              : "films trouvés."}
+            {#if $films.currentFilmsList.length > 0}
+              {$films.currentFilmsList.length}
+              {$films.currentFilmsList.length < 2
+                ? "film trouvé."
+                : "films trouvés."}
+            {/if}
             <!-- <XButton on:click={refresh}
               ><Refresh size={14} color={"#666"} /></XButton
             > -->
-          {/await}{/if}
-      </div>
+          {/await}
+        </div>
+      {/if}
     </div>
   </div>
 
