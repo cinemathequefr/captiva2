@@ -6,29 +6,29 @@
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
   import { onMount } from "svelte";
-  // import FilmsExportJson from "./FilmsExportJson.svelte";
-  // import FilmsExportJsonNovius from "./FilmsExportJsonNovius.svelte";
-  // import XButton from "../ui/XButton.svelte";
-  // import Refresh from "../icons/Refresh.svelte";
-  // if (!$settings.currentProgId) $settings.currentProgId = 119; // TODO: fetch "default" currentProgId
+  import { browser } from "$app/env";
 
-  // TODO : retrouver l'état du widget : idCycle / $films.currentFilmList, et l'affichage correspondant.
-  onMount(async () => {});
+  // TODO (?): retrouver l'état du widget : idCycle / $films.currentFilmList, et l'affichage correspondant.
+  // onMount(async () => {});
 
   let cyclesResponse;
   let elSelectCycle;
-  // let cyclesResponse = get(`prog/${$settings.currentProgId}/cycles`);
-
   let idCycle;
   let pWhenFilmsFetched; // Promesse (sans valeur de résolution) qui est tenue quand la liste des films est obtenue.
 
+  // Quand la valeur currentProgId change dans le store settings,
+  // on requête la liste des cycles du programme (NB :  apparemment, la promesse est réactive donc l'affichage se met à jour).
+  // On force l'affichage du premier item (libellé du programme, non sélectionnable), en ignorant le cas où il n'y a pas (encore) de données.
+  // On réinitialise le cycle sélectionné et on rafraîchit l'affichage de la liste (vide) des films.
   $: {
-    $settings.currentProgId = $settings.currentProgId;
+    $settings.currentProgId;
     cyclesResponse = get(`prog/${$settings.currentProgId}/cycles`);
     cyclesResponse.then(() => {
-      idCycle = undefined; // En principe, inutile (idCycle sera affecté dans `refresh`), mais semble éviter un bug.
+      try {
+        elSelectCycle.options[0].selected = true;
+      } catch (e) {}
+      idCycle = null;
       refresh();
-      elSelectCycle.options[0].selected = true; // "Sélectionne" l'intitulé du programme (première option du select).
     });
   }
 
@@ -36,7 +36,6 @@
    * fetchFilmsList
    * Requête la liste des films d'un cycle.
    * Le cycle est identifié par idCycle, soit directement, soit via un événement.
-   * @param arg {number|Object} idCycle ou event.
    */
   function fetchFilmsList(arg) {
     if (!arg) {
@@ -98,34 +97,15 @@
   </div>
 
   <div class="tools-container">
-    <!-- <div class="tools-container-left">
-      <XButton
-        style="font-size:.75rem;"
-        on:click={() => {
-          $settings.filmEditOrView = "view";
-        }}>view</XButton
-      >
-      <XButton
-        style="font-size:.75rem;"
-        on:click={() => {
-          $settings.filmEditOrView = "edit";
-        }}>edit</XButton
-      >
-    </div> -->
-
+    <div class="tools-container-left" />
     <div class="tools-container-right">
       {#if idCycle}
         <div class="films-count">
           {#await pWhenFilmsFetched then}
             {#if $films.currentFilmsList.length > 0}
               {$films.currentFilmsList.length}
-              {$films.currentFilmsList.length < 2
-                ? "film trouvé."
-                : "films trouvés."}
+              {$films.currentFilmsList.length < 2 ? "film" : "films"}
             {/if}
-            <!-- <XButton on:click={refresh}
-              ><Refresh size={14} color={"#666"} /></XButton
-            > -->
           {/await}
         </div>
       {/if}
@@ -157,12 +137,7 @@
           </li>
         {/each}
       </ul>
-      <div class="footer">
-        <!-- <FilmsExportJson />
-        <FilmsExportJsonNovius
-          filename="PROG{$settings.currentProgId}_CYCL{idCycle}_FILMS_NOVIUS.json"
-        /> -->
-      </div>
+      <div class="footer" />
     {/if}
   {:catch error}
     <p>{error.message}</p>
@@ -184,7 +159,6 @@
     padding: 8px 4px 0 4px;
   }
   .films-count {
-    padding: 3px 16px 12px 16px;
     flex: 0 0 auto;
     overflow: hidden;
     font-size: 0.813rem;
@@ -205,10 +179,12 @@
   li.selected,
   li.selected:nth-child(even) {
     background-color: #ffa;
+    outline: none;
   }
   li.selected:focus,
   li.selected:nth-child(even):focus {
     background-color: #ff6;
+    outline: none;
   }
   li:nth-child(even) {
     background-color: #ccc;
@@ -250,13 +226,12 @@
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
-    margin: 0 7px 0 4px;
+    margin: 0;
+    padding: 0 6px;
+    min-height: 32px;
   }
   .tools-container-left,
   .tools-container-right {
     flex: 1 1 auto;
-  }
-  label {
-    padding: 12px;
   }
 </style>
