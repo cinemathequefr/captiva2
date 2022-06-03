@@ -14,8 +14,11 @@
       <FilmsNav />
     </svelte:fragment>
     <svelte:fragment slot="right">
+      <FilmEdit />
+      <!--
       {#if $settings.filmEditOrView === "edit"}
         <FilmEdit />{:else}<FilmView />{/if}
+      -->
     </svelte:fragment>
   </SplitPane>
 </div>

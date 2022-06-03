@@ -8,7 +8,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/env";
 
-  // TODO (?): retrouver l'état du widget : idCycle / $films.currentFilmList, et l'affichage correspondant.
+  // TODO: quand on revient sur cette route, retrouver l'état (idCycle, $films.currentFilmList).
   // onMount(async () => {});
 
   let cyclesResponse;
@@ -63,9 +63,11 @@
     }
   }
 
+  // Lorsqu'un film est sélectionné dans la liste, son pk est inscrit dans le store film.currentFilmPk.
   function selectFilm(e) {
     $films.currentFilmPk = Number(e.currentTarget.dataset.pk);
   }
+
   function refresh(e) {
     fetchFilmsList(idCycle);
   }

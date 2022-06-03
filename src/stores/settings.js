@@ -5,7 +5,7 @@ export const settings = persist(
   writable({
     currentProgId: 124, // Identifiant du programme sélectionné
     currentProgName: "",
-    filmEditOrView: "view", // view | edit
+    filmEditOrView: "edit", // view | edit
   }),
   localStorage(),
   "settings"

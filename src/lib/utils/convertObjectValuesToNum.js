@@ -1,4 +1,5 @@
-const _ = require("lodash");
+// Version ESM (adapté le 2022-06-03)
+import _ from "lodash";
 
 /**
  * convertObjectValuesToNum
@@ -9,11 +10,13 @@ const _ = require("lodash");
  * @param o {Object}
  * @param keys {Array:string}
  */
-module.exports = function convertObjectValuesToNum(o, keys) {
+function convertObjectValuesToNum(o, keys) {
   return _(_.cloneDeep(o))
     .mapValues((v, k) => {
       const conv = Number(v); // Nombre ou isNaN
       return _.indexOf(keys, k) > -1 ? (isNaN(conv) ? v : conv) : v;
     })
     .value();
-};
+}
+
+export default convertObjectValuesToNum;
