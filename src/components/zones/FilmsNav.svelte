@@ -5,31 +5,43 @@
   import { settings } from "../../stores/settings";
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
-  import { onMount } from "svelte";
-  import { browser } from "$app/env";
-
-  // TODO: quand on revient sur cette route, retrouver l'état (idCycle, $films.currentFilmList).
-  // onMount(async () => {});
-
+  // import { onMount } from "svelte";
+  // import { browser } from "$app/env";
   let cyclesResponse;
   let elSelectCycle;
-  let idCycle;
   let pWhenFilmsFetched; // Promesse (sans valeur de résolution) qui est tenue quand la liste des films est obtenue.
 
-  // Quand la valeur currentProgId change dans le store settings,
+  $: {
+    // get(`prog/${$settings.currentProgId}/cycles`).then((cycles) => {
+    //   updateCycle(cycles);
+    // });
+    cyclesResponse = get(`prog/${$settings.currentProgId}/cycles`);
+    cyclesResponse.then((cycles) => {
+      console.log("/");
+      updateCycle(cycles);
+      console.log("*");
+    });
+  }
+
+  // Quand la valeur currentProgId change dans le store settings, cette fonction est appelée depuis le bloc reactive :
   // on requête la liste des cycles du programme (NB :  apparemment, la promesse est réactive donc l'affichage se met à jour).
   // On force l'affichage du premier item (libellé du programme, non sélectionnable), en ignorant le cas où il n'y a pas (encore) de données.
   // On réinitialise le cycle sélectionné et on rafraîchit l'affichage de la liste (vide) des films.
-  $: {
-    $settings.currentProgId;
-    cyclesResponse = get(`prog/${$settings.currentProgId}/cycles`);
-    cyclesResponse.then(() => {
+  // Si $films.currentCycleId n'est pas dans la liste des cycles chargée, il passe à null, et on tente de mettre le select sur l'en-tête de programme.
+  function updateCycle(cycles) {
+    console.log(
+      _(cycles.data).find((d) => d.id_cycle === $films.currentCycleId)
+    );
+    if (
+      _(cycles.data).find((d) => d.id_cycle === $films.currentCycleId) ===
+      undefined
+    ) {
+      $films.currentCycleId = null;
       try {
         elSelectCycle.options[0].selected = true;
       } catch (e) {}
-      idCycle = null;
-      refresh();
-    });
+    }
+    // refresh(); // Pourquoi l'appeler ici ?
   }
 
   /**
@@ -39,17 +51,23 @@
    */
   function fetchFilmsList(arg) {
     if (!arg) {
-      idCycle = undefined;
+      $films.currentCycleId = undefined;
+      // idCycle = undefined;
       pWhenFilmsFetched = true;
       $films.currentFilmsList = [];
     } else {
       if (typeof arg === "number") {
-        idCycle = arg;
+        $films.currentCycleId = arg;
+        // idCycle = arg;
       } else {
-        idCycle = Number(arg.currentTarget.value);
+        $films.currentCycleId = Number(arg.currentTarget.value);
+        // idCycle = Number(arg.currentTarget.value);
       }
       pWhenFilmsFetched = new Promise((resolve, reject) => {
-        get(`prog/${$settings.currentProgId}/cycle/${idCycle}/films`)
+        get(
+          `prog/${$settings.currentProgId}/cycle/${$films.currentCycleId}/films`
+        )
+          // get(`prog/${$settings.currentProgId}/cycle/${idCycle}/films`)
           .then((data) => {
             $films.currentFilmsList = _(data.data)
               .orderBy((d) => _.kebabCase(d.titre))
@@ -68,9 +86,9 @@
     $films.currentFilmPk = Number(e.currentTarget.dataset.pk);
   }
 
-  function refresh(e) {
-    fetchFilmsList(idCycle);
-  }
+  // function refresh(e) {
+  //   fetchFilmsList($films.currentCycleId);
+  // }
 </script>
 
 <div class="container">
@@ -101,7 +119,7 @@
   <div class="tools-container">
     <div class="tools-container-left" />
     <div class="tools-container-right">
-      {#if idCycle}
+      {#if $films.currentCycleId}
         <div class="films-count">
           {#await pWhenFilmsFetched then}
             {#if $films.currentFilmsList.length > 0}

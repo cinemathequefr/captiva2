@@ -4,4 +4,5 @@ export const films = writable({
   currentFilmsList: [],
   currentFilmPk: null,
   currentFilmEditingStatus: null,
+  currentCycleId: null, // TEST
 });
