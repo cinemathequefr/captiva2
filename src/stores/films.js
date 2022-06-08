@@ -1,9 +1,7 @@
 import { writable } from "svelte/store";
 
-export const films = writable({
-  currentFilmsList: [],
-  currentFilmPk: null,
-  currentFilmEditingStatus: null,
-  currentCycleId: null, // TEST
-  currentCyclesList: [], // TEST
-});
+export const currentFilmsList = writable([]);
+export const currentFilmPk = writable(null);
+export const currentFilmEditingStatus = writable(null);
+export const currentCycleId = writable(null);
+export const currentCyclesList = writable([]);

@@ -1,7 +1,16 @@
 <script>
   import _ from "lodash";
   import { get, put } from "../../lib/api.js";
-  import { films } from "../../stores/films.js";
+
+  import {
+    currentFilmsList,
+    currentFilmPk,
+    currentFilmEditingStatus,
+    currentCycleId,
+    currentCyclesList,
+  } from "../../stores/films";
+
+  // import { films } from "../../stores/films.js";
   import Form from "../lib/Form.svelte";
   import cudm from "../../lib/format/cudm";
   import convertObjectValuesToNum from "../../../src/lib/utils/convertObjectValuesToNum";
@@ -19,11 +28,11 @@
     // DONE: Empêche le rechargement intempestif du component quand on sélectionne un autre cycle.
     // TODO: Améliorer.
     oldPk = pk;
-    pk = $films.currentFilmPk;
+    pk = $currentFilmPk;
     if (pk && oldPk !== pk) {
       film = get(`film/${pk}`);
       film.then((f) => {
-        $films.currentFilmEditingStatus = f.editing_status;
+        $currentFilmEditingStatus = f.editing_status;
       });
     }
   }
@@ -40,9 +49,9 @@
         snackbar.message = "Enregistré.";
         snackbar.visible = true;
         snackbar.props.bg = "#9fc";
-        $films.currentFilmEditingStatus = film.editing_status;
+        $currentFilmEditingStatus = film.editing_status;
         // Met à jour la currentFilmsList avec les données à jour du film.
-        $films.currentFilmsList = _($films.currentFilmsList)
+        $currentFilmsList = _($currentFilmsList)
           .map((d) => {
             if (d.pk === pk) {
               return _({})
@@ -86,12 +95,9 @@
             target="film_site_cf">{film.pk}</a
           >
           <div class="status-container"
-            ><EditingStatus
-              status={$films.currentFilmEditingStatus}
-              size={12}
-            />
+            ><EditingStatus status={$currentFilmEditingStatus} size={12} />
             {["Non relu", "En cours", "Corrigé"][
-              $films.currentFilmEditingStatus
+              $currentFilmEditingStatus
             ]}</div
           >
         </div>

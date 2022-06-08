@@ -1,25 +1,33 @@
 <script>
   import _ from "lodash";
   import { get } from "../../lib/api.js";
-  import { films } from "../../stores/films";
+
+  import {
+    currentFilmsList,
+    currentFilmPk,
+    currentFilmEditingStatus,
+    currentCycleId,
+    currentCyclesList,
+  } from "../../stores/films";
+
   import { settings } from "../../stores/settings";
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
   import { browser } from "$app/env";
-  import { get as got } from "svelte/store";
-  let pCycles; // Promesse : liste des cycles du programme nouvellement sélectionné.
-  // let pCycles = new Promise((resolve, reject) => {}); // Promesse : liste des cycles du programme nouvellement sélectionné.
   let elSelectCycle; // Elément DOM du sélecteur de cycle.
-  let pWhenFilmsFetched;
-  let pFilms;
+  let pCycles; // Promesse : liste des cycles du programme nouvellement sélectionné.
+  let pFilms; // Promesse
+
+  // Le cycle courant est null.
+  $: if (!$currentCycleId) $currentFilmsList = [];
 
   // Le programme sélectionné change.
   $: {
     if (browser === true) {
       pCycles = get(`prog/${$settings.currentProgId}/cycles`);
       pCycles.then((cycles) => {
-        $films.currentCyclesList = cycles.data;
-        $films.currentCycleId = null;
+        $currentCyclesList = cycles.data;
+        $currentCycleId = null;
         try {
           elSelectCycle.options[0].selected = true;
         } catch (e) {}
@@ -30,39 +38,27 @@
   // Le cycle sélectionné change.
   $: {
     if (browser === true) {
-      $films.currentCycleId;
+      $currentCycleId;
       fetchFilms(); // Pourquoi cet appel cause-t-il un effet réactif sur $films.currentCycleId ? Réponse : c'est l'assignation de $films.currentFilmsList qui le provoque. Pourquoi ?
     }
   }
 
   function fetchFilms() {
-    if (!$films.currentCycleId) return;
+    if (!$currentCycleId) {
+      return;
+    }
     pFilms = get(
-      `prog/${$settings.currentProgId}/cycle/${$films.currentCycleId}/films`
-    );
-
-    pFilms.then((f) => {
-      console.log("#1");
-
-      // films.update((o) =>
-      //   _({})
-      //     .assign(o, {
-      //       currentFilmsList: _(f.data)
-      //         .orderBy((d) => _.kebabCase(d.titre))
-      //         .value(),
-      //     })
-      //     .value()
-      // );
-
-      $films.currentFilmsList = _(f.data)
+      `prog/${$settings.currentProgId}/cycle/${$currentCycleId}/films`
+    ).then((f) => {
+      $currentFilmsList = _(f.data)
         .orderBy((d) => _.kebabCase(d.titre))
         .value();
-      console.log("#2");
-      // console.log($films.currentFilmsList);
     });
   }
 
-  // Le film sélectionné change.
+  function selectFilm(e) {
+    $currentFilmPk = Number(e.currentTarget.dataset.pk);
+  }
 </script>
 
 <div class="container">
@@ -72,12 +68,12 @@
         <select
           bind:this={elSelectCycle}
           on:change|preventDefault={(e) => {
-            $films.currentCycleId = Number(e.currentTarget.value);
+            $currentCycleId = Number(e.currentTarget.value);
           }}
         >
           <option disabled value={null}>📕 {$settings.currentProgName}</option>
           {#await pCycles then}
-            {#each $films.currentCyclesList as cycle}
+            {#each $currentCyclesList as cycle}
               <option value={cycle.id_cycle}>
                 {cycle.id_cycle}
                 -
@@ -95,12 +91,12 @@
   <div class="tools-container">
     <div class="tools-container-left" />
     <div class="tools-container-right">
-      {#if $films.currentCycleId}
+      {#if $currentCycleId}
         <div class="films-count">
           {#await pFilms then}
-            {#if $films.currentFilmsList.length > 0}
-              {$films.currentFilmsList.length}
-              {$films.currentFilmsList.length < 2 ? "film" : "films"}
+            {#if $currentFilmsList.length > 0}
+              {$currentFilmsList.length}
+              {$currentFilmsList.length < 2 ? "film" : "films"}
             {/if}
           {/await}
         </div>
@@ -109,15 +105,15 @@
   </div>
 
   {#await pFilms then}
-    {#if $films.currentFilmsList.length > 0}
+    {#if $currentFilmsList.length > 0}
       <ul class="films-list">
-        {#each $films.currentFilmsList as film, i}
+        {#each $currentFilmsList as film, i}
           <li
-            on:focus={() => {}}
-            on:click={() => {}}
+            on:focus={selectFilm}
+            on:click={selectFilm}
             data-pk={film.pk}
             title={film.pk}
-            class:selected={film.pk === $films.currentFilmPk}
+            class:selected={film.pk === $currentFilmPk}
             tabindex={i + 1}
           >
             <div class="title-container">
