@@ -6,10 +6,12 @@
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
   import { browser } from "$app/env";
+  import { get as got } from "svelte/store";
   let pCycles; // Promesse : liste des cycles du programme nouvellement sélectionné.
   // let pCycles = new Promise((resolve, reject) => {}); // Promesse : liste des cycles du programme nouvellement sélectionné.
   let elSelectCycle; // Elément DOM du sélecteur de cycle.
   let pWhenFilmsFetched;
+  let pFilms;
 
   // Le programme sélectionné change.
   $: {
@@ -29,8 +31,35 @@
   $: {
     if (browser === true) {
       $films.currentCycleId;
-      console.log("Something happened.");
+      fetchFilms(); // Pourquoi cet appel cause-t-il un effet réactif sur $films.currentCycleId ? Réponse : c'est l'assignation de $films.currentFilmsList qui le provoque. Pourquoi ?
     }
+  }
+
+  function fetchFilms() {
+    if (!$films.currentCycleId) return;
+    pFilms = get(
+      `prog/${$settings.currentProgId}/cycle/${$films.currentCycleId}/films`
+    );
+
+    pFilms.then((f) => {
+      console.log("#1");
+
+      // films.update((o) =>
+      //   _({})
+      //     .assign(o, {
+      //       currentFilmsList: _(f.data)
+      //         .orderBy((d) => _.kebabCase(d.titre))
+      //         .value(),
+      //     })
+      //     .value()
+      // );
+
+      $films.currentFilmsList = _(f.data)
+        .orderBy((d) => _.kebabCase(d.titre))
+        .value();
+      console.log("#2");
+      // console.log($films.currentFilmsList);
+    });
   }
 
   // Le film sélectionné change.
@@ -40,7 +69,12 @@
   <div class="cycle-selector">
     <Form>
       <fieldset>
-        <select bind:this={elSelectCycle}>
+        <select
+          bind:this={elSelectCycle}
+          on:change|preventDefault={(e) => {
+            $films.currentCycleId = Number(e.currentTarget.value);
+          }}
+        >
           <option disabled value={null}>📕 {$settings.currentProgName}</option>
           {#await pCycles then}
             {#each $films.currentCyclesList as cycle}
@@ -63,7 +97,7 @@
     <div class="tools-container-right">
       {#if $films.currentCycleId}
         <div class="films-count">
-          {#await pWhenFilmsFetched then}
+          {#await pFilms then}
             {#if $films.currentFilmsList.length > 0}
               {$films.currentFilmsList.length}
               {$films.currentFilmsList.length < 2 ? "film" : "films"}
@@ -74,7 +108,7 @@
     </div>
   </div>
 
-  {#await pWhenFilmsFetched then}
+  {#await pFilms then}
     {#if $films.currentFilmsList.length > 0}
       <ul class="films-list">
         {#each $films.currentFilmsList as film, i}
@@ -86,14 +120,6 @@
             class:selected={film.pk === $films.currentFilmPk}
             tabindex={i + 1}
           >
-            <!-- <li
-            on:focus={selectFilm}
-            on:click={selectFilm}
-            data-pk={film.pk}
-            title={film.pk}
-            class:selected={film.pk === $films.currentFilmPk}
-            tabindex={i + 1}
-          > -->
             <div class="title-container">
               <div class="title">
                 {film.titre}

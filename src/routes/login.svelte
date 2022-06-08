@@ -36,8 +36,6 @@
       <fieldset><input bind:value={password} type="password" /></fieldset>
       <fieldset><input class="center" type="submit" value="OK" /></fieldset>
     </Form>
-  {:else}
-    <div>Vous êtes actuellement connecté.</div>
   {/if}
   {#if infoMessage}
     <div class="info">{infoMessage}</div>
