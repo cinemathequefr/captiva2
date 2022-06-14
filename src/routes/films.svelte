@@ -3,7 +3,7 @@
   import FilmView from "../components/zones/FilmView.svelte";
   import FilmEdit from "../components/zones/FilmEdit.svelte";
   import FilmsNav from "../components/zones/FilmsNav.svelte";
-  import { settings } from "../stores/settings";
+  // import { settings } from "../stores/settings";
 </script>
 
 <svelte:head><title>Captiva - Films</title></svelte:head>

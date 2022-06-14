@@ -24,6 +24,7 @@
     message: "",
     props: {}, // bottom, bg, color, style, timeout
   };
+
   $: {
     // DONE: Empêche le rechargement intempestif du component quand on sélectionne un autre cycle.
     // TODO: Améliorer.
@@ -36,6 +37,7 @@
       });
     }
   }
+
   function updateFilm(e) {
     let formData = new FormData(e.target);
     let film = [];

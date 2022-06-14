@@ -43,8 +43,15 @@
   </div>
 </nav>
 
-<Modal show={$modal} closeButton={false} classWindow="modal-window" />
+<Modal
+  show={$modal}
+  closeButton={false}
+  classWindow="modal-window"
+  transitionBgProps={{ duration: 50 }}
+  transitionWindowProps={{ duration: 50 }}
+/>
 
+<!-- <Modal show={$modal} closeButton={false} classWindow="modal-window" /> -->
 <style>
   :global(.modal-window) {
     width: 400px !important;

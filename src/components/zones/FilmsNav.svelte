@@ -10,56 +10,91 @@
     currentCyclesList,
   } from "../../stores/films";
 
-  import { settings } from "../../stores/settings";
+  import { currentProgId, currentProgName } from "../../stores/settings";
+  // import { settings } from "../../stores/settings";
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
   import { browser } from "$app/env";
   let elSelectCycle; // Elément DOM du sélecteur de cycle.
-  let pCycles; // Promesse : liste des cycles du programme nouvellement sélectionné.
-  let pFilms; // Promesse
+  let pCycles; // Promesse : obtention de la liste des cycles du programme sélectionné.
+  let pFilms; // Promesse : obtention de la liste des films du cycle sélectionné.
 
-  // Le cycle courant est null.
-  $: if (!$currentCycleId) $currentFilmsList = [];
+  // console.log($currentCycleId);
 
   // Le programme sélectionné change.
   $: {
     if (browser === true) {
-      pCycles = get(`prog/${$settings.currentProgId}/cycles`);
-      pCycles.then((cycles) => {
-        $currentCyclesList = cycles.data;
-        $currentCycleId = null;
-        try {
-          elSelectCycle.options[0].selected = true;
-        } catch (e) {}
-      });
+      $currentProgId;
+      fetchCycles();
     }
   }
+  // $: {
+  //   if (browser === true) {
+  //     pCycles = get(`prog/${$settings.currentProgId}/cycles`);
+  //     pCycles.then((cycles) => {
+  //       $currentCyclesList = cycles.data;
+  //       $currentCycleId = null;
+  //       $currentFilmsList = [];
+  //       try {
+  //         elSelectCycle.options[0].selected = true;
+  //       } catch (e) {}
+  //     });
+  //   }
+  // }
 
   // Le cycle sélectionné change.
   $: {
     if (browser === true) {
       $currentCycleId;
-      fetchFilms(); // Pourquoi cet appel cause-t-il un effet réactif sur $films.currentCycleId ? Réponse : c'est l'assignation de $films.currentFilmsList qui le provoque. Pourquoi ?
+      fetchFilms();
     }
+  }
+
+  function fetchCycles() {
+    if (!$currentProgId) {
+      return;
+    }
+    pCycles = get(`prog/${$currentProgId}/cycles`);
+    pCycles.then((cycles) => {
+      $currentCyclesList = cycles.data;
+      $currentCycleId = null;
+      $currentFilmsList = [];
+      try {
+        elSelectCycle.options[0].selected = true;
+      } catch (e) {}
+    });
   }
 
   function fetchFilms() {
     if (!$currentCycleId) {
       return;
     }
-    pFilms = get(
-      `prog/${$settings.currentProgId}/cycle/${$currentCycleId}/films`
-    ).then((f) => {
-      $currentFilmsList = _(f.data)
-        .orderBy((d) => _.kebabCase(d.titre))
-        .value();
-    });
+    pFilms = get(`prog/${$currentProgId}/cycle/${$currentCycleId}/films`).then(
+      (f) => {
+        $currentFilmsList = _(f.data)
+          .orderBy((d) => _.kebabCase(d.titre))
+          .value();
+      }
+    );
   }
 
   function selectFilm(e) {
     $currentFilmPk = Number(e.currentTarget.dataset.pk);
   }
 </script>
+
+<div class="debug"
+  ><pre
+    ><code>
+  $currentProgId: {$currentProgId}
+  $currentCyclesList.length: {$currentCyclesList.length}
+  $currentCycleId: {$currentCycleId}
+  $currentFilmsList.length: {$currentFilmsList.length}
+  $currentFilmPk: {$currentFilmPk}
+  $currentFilmEditingStatus: {$currentFilmEditingStatus}
+</code></pre
+  ></div
+>
 
 <div class="container">
   <div class="cycle-selector">
@@ -71,7 +106,7 @@
             $currentCycleId = Number(e.currentTarget.value);
           }}
         >
-          <option disabled value={null}>📕 {$settings.currentProgName}</option>
+          <option disabled value={null}>📕 {$currentProgName}</option>
           {#await pCycles then}
             {#each $currentCyclesList as cycle}
               <option value={cycle.id_cycle}>
@@ -156,10 +191,14 @@
     font-size: 0.813rem;
     text-align: right;
   }
+
   ul {
-    padding: 0 4px;
+    padding: 0 2px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
   }
+
   li {
     background-color: #ddd;
     padding: 4px 2px 4px 12px;

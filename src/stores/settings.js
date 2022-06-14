@@ -1,13 +1,20 @@
 import { persist, localStorage } from "@macfja/svelte-persistent-store";
 import { writable } from "svelte/store";
-// import { browser } from "$app/env";
 
-export const settings = persist(
-  writable({
-    currentProgId: 124, // Identifiant du programme sélectionné
-    currentProgName: "",
-    filmEditOrView: "edit", // view | edit
-  }),
+// export const settings = persist(
+//   writable({
+//     currentProgId: 124, // Identifiant du programme sélectionné
+//     currentProgName: "",
+//     filmEditOrView: "edit", // view | edit
+//   }),
+//   localStorage(),
+//   "settings"
+// );
+const currentProgId = persist(writable(null), localStorage(), "currentProgId");
+const currentProgName = persist(
+  writable(""),
   localStorage(),
-  "settings"
+  "currentProgName"
 );
+
+export { currentProgId, currentProgName };
