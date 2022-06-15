@@ -3,11 +3,11 @@
   import FilmView from "../components/zones/FilmView.svelte";
   import FilmEdit from "../components/zones/FilmEdit.svelte";
   import FilmsNav from "../components/zones/FilmsNav.svelte";
-  // import { settings } from "../stores/settings";
+  import Protected from "../components/Protected.svelte";
 </script>
 
 <svelte:head><title>Captiva - Films</title></svelte:head>
-
+<Protected />
 <div class="container">
   <SplitPane leftInitialSize="25%">
     <svelte:fragment slot="left">

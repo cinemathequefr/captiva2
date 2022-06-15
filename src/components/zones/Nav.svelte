@@ -7,8 +7,9 @@
   import Settings from "../Settings.svelte";
   const modal = writable(null);
   import { page } from "$app/stores";
-  import { token } from "../../stores/token.js";
-  $: $token = $token;
+  import { token } from "../../stores/token";
+
+  // $: $token; // ?
 
   const showSettings = () => modal.set(Settings);
 </script>

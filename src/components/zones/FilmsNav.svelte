@@ -1,46 +1,32 @@
 <script>
+  import { browser } from "$app/env";
   import _ from "lodash";
   import { get } from "../../lib/api.js";
 
   import {
+    currentProgId,
+    currentProgName,
     currentFilmsList,
     currentFilmPk,
     currentFilmEditingStatus,
     currentCycleId,
     currentCyclesList,
-  } from "../../stores/films";
+  } from "../../stores/main";
 
-  import { currentProgId, currentProgName } from "../../stores/settings";
-  // import { settings } from "../../stores/settings";
   import EditingStatus from "../EditingStatus.svelte";
   import Form from "../lib/Form.svelte";
-  import { browser } from "$app/env";
   let elSelectCycle; // Elément DOM du sélecteur de cycle.
   let pCycles; // Promesse : obtention de la liste des cycles du programme sélectionné.
   let pFilms; // Promesse : obtention de la liste des films du cycle sélectionné.
-
-  // console.log($currentCycleId);
 
   // Le programme sélectionné change.
   $: {
     if (browser === true) {
       $currentProgId;
+      console.log(`currentProgId vient de changer : ${$currentProgId}`);
       fetchCycles();
     }
   }
-  // $: {
-  //   if (browser === true) {
-  //     pCycles = get(`prog/${$settings.currentProgId}/cycles`);
-  //     pCycles.then((cycles) => {
-  //       $currentCyclesList = cycles.data;
-  //       $currentCycleId = null;
-  //       $currentFilmsList = [];
-  //       try {
-  //         elSelectCycle.options[0].selected = true;
-  //       } catch (e) {}
-  //     });
-  //   }
-  // }
 
   // Le cycle sélectionné change.
   $: {

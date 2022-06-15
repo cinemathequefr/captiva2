@@ -6,11 +6,8 @@
     currentFilmsList,
     currentFilmPk,
     currentFilmEditingStatus,
-    currentCycleId,
-    currentCyclesList,
-  } from "../../stores/films";
+  } from "../../stores/main";
 
-  // import { films } from "../../stores/films.js";
   import Form from "../lib/Form.svelte";
   import cudm from "../../lib/format/cudm";
   import convertObjectValuesToNum from "../../../src/lib/utils/convertObjectValuesToNum";

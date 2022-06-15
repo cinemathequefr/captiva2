@@ -1,7 +1,7 @@
 <script>
   import _ from "lodash";
   import Form from "../components/lib/Form.svelte";
-  import { currentProgId, currentProgName } from "../stores/settings";
+  import { currentProgId, currentProgName } from "../stores/main";
   // import { settings } from "../stores/settings";
 
   // let currentProgId = $settings.currentProgId;
